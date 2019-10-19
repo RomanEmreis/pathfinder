@@ -11,7 +11,7 @@ pool:
 
 variables:
   buildConfiguration: 'Release'
-  targetProject: Pathfinder
+  targetProject: Pathfinder\Pathfinder.csproj
 
 steps:
 - task: UseDotNet@2
