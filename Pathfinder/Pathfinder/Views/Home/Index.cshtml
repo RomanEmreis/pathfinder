@@ -1,0 +1,32 @@
+﻿@model RoomsViewModel
+@{ ViewData["Title"] = "Rooms"; }
+<div class="text-center">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>@Html.DisplayNameFor(x => x.Rooms.FirstOrDefault().Name)</th>
+                <th>@Html.DisplayNameFor(x => x.Rooms.FirstOrDefault().VisitorsCount)</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var room in Model.Rooms) {
+                <tr>
+                    <td>@room.Name</td>
+                    <td>@room.VisitorsCount</td>
+                    <td>
+                        @Html.ActionLink("Go coding", "Index", "Editor", @room)
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <form asp-controller="Home" asp-action="CreateRoom" method="post" class="new-room-form form-group">
+        @{ var roomName = string.Empty; }
+        <span>
+            <label class="control-label">Enter new room name:</label>
+            <input asp-for="@roomName" class="form-control" />
+            <input type="submit" value="Отправить" class="btn btn-primary"/>
+        </span>
+    </form>
+</div>
