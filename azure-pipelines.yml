@@ -21,4 +21,4 @@ steps:
     includePreviewVersions: true
 
 - script: dotnet build $(targetProject) --configuration $(buildConfiguration)
-  displayName: 'dotnet build $(buildConfiguration)'
+  displayName: 'dotnet build $(targetProject) $(buildConfiguration)'
