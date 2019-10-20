@@ -5,6 +5,7 @@
     <UserSecretsId>aspnet-Pathfinder-CD110DBA-A7CE-451C-BC7B-C5221145ED0A</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
+    <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
