@@ -1,0 +1,22 @@
+version: '3.7'
+
+services:
+  pathfinder:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:443;http://+:80
+      - ASPNETCORE_HTTPS_PORT=44388
+    ports:
+      - "50929:80"
+      - "44388:443"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+  db:
+    environment:
+      SA_PASSWORD: ${SA_PWD}
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1435:1433"
+    expose: 
+      - 1435

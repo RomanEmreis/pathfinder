@@ -1,0 +1,14 @@
+version: '3.7'
+
+services:
+  pathfinder:
+    image: ${DOCKER_REGISTRY-}pathfinder
+    container_name: "pathfinder"
+    build:
+      context: .
+      dockerfile: Pathfinder/Dockerfile
+    depends_on:
+      - db
+  db:
+    image: "mcr.microsoft.com/mssql/server"
+    container_name: "db"

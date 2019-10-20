@@ -1,0 +1,35 @@
+﻿@model ProjectsViewModel
+@{ ViewData["Title"] = "Projects"; }
+
+<div class="text-center">
+    <table id="projectsTable" class="table">
+        <thead>
+            <tr>
+                <th>@Html.DisplayNameFor(x => x.Projects.FirstOrDefault().Name)</th>
+                <th>@Html.DisplayNameFor(x => x.Projects.FirstOrDefault().Collaborators.Count)</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var project in Model.Projects) {
+                <tr id="tr_@project.Name">
+                    <td>
+                        @Html.ActionLink(project.Name, "Index", "Editor", new { projectName = project.Name }, new { target = "_blank" })
+                    </td>
+                    <td>
+                        @project.Collaborators.Count
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <br/>
+    <form asp-controller="Home" asp-action="CreateProject" method="post" class="new-room-form form-inline">
+        @{ var projectName = string.Empty; }
+        <span>
+            <label class="control-label">Enter new project name:</label>
+            <input asp-for="@projectName" class="form-control" />
+            <input type="submit" value="Send" class="btn btn-primary" formtarget="_blank"/>
+        </span>
+    </form>
+</div>

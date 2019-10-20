@@ -1,0 +1,10 @@
+﻿[*.cs]
+
+# CA2007: Попробуйте вызвать ConfigureAwait для ожидаемой задачи
+dotnet_diagnostic.CA2007.severity = silent
+
+# CA1052: Типы статических заполнителей должны быть Static или NotInheritable
+dotnet_diagnostic.CA1052.severity = silent
+
+# CA1822: Пометьте члены как статические
+dotnet_diagnostic.CA1822.severity = suggestion
