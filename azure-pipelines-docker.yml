@@ -1,0 +1,13 @@
+variables:
+  imageName: pathfinder # Replace with the name of the image you want to publish
+
+steps:
+- script: |
+    docker build -t $(dockerLogin)/$(imageName) .
+    docker login -u $(dockerLogin) -p $(dockerPassword)
+    docker push $(dockerLogin)/$(imageName)
+
+    docker login --username=_ --password=$(token) registry.heroku.com
+
+    docker build -t registry.heroku.com/pathfinder-code/web .
+    docker push registry.heroku.com/pathfinder-code/web
