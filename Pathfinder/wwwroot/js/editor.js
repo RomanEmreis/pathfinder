@@ -1,10 +1,13 @@
-﻿var connection = new signalR.HubConnectionBuilder()
+﻿var connection   = new signalR.HubConnectionBuilder()
     .withUrl("/liveeditor")
     .build();
 
+connection.on('CodeChanged', (projectName, delta) => codeChanged(projectName, delta));
+
 connection
     .start()
-    .catch(err => console.error(err.toString()));
+    .then(() => connectionEstablished())
+    .catch(err => onError(err));
 
 var silent = false;
 var editor = ace.edit("editor");
@@ -12,23 +15,40 @@ var editor = ace.edit("editor");
 editor.setTheme("ace/theme/tomorrow");
 editor.session.setMode("ace/mode/csharp");
 
-connection.on('CodeChanged', (delta) => {
+editor.session.on('change', delta => textChanged(delta));
+editor.session.selection.on('changeSelection', e => selectionChanged(e));
+editor.session.selection.on('changeCursor', e => cursorChanged(e));
+
+$(window).on("beforeunload", () => editorClosed())
+
+const connectionEstablished = async () => {
+    let projectName = await getCurrentProjectName();
+    connection.invoke('CollaboratorJoinsProject', projectName);
+};
+
+const editorClosed = async () => {
+    let projectName = await getCurrentProjectName();
+    connection.invoke('CollaboratorLeavesProject', projectName);
+};
+
+const getCurrentProjectName = async () => {
+    let searchParams = new URLSearchParams(window.location.search);
+    return searchParams.get('projectName');
+};
+
+const codeChanged = (projectName, delta) => {
     silent = true;
-
-    let deltas = [delta];
-    editor.session.doc.applyDeltas(deltas);
-
+    editor.session.doc.applyDeltas([delta]);
     silent = false;
-});
+};
 
-editor.session.on('change', (delta) => {
+const textChanged = async delta => {
     if (!silent) {
-        connection.invoke('CodeChanged', delta);
+        let projectName = await getCurrentProjectName();
+        connection.invoke('CodeChanged', projectName, delta);
     }
-});
+};
 
-editor.session.selection.on('changeSelection', (e) => {
-});
+const selectionChanged = e => { };
 
-editor.session.selection.on('changeCursor', (e) => {
-});
+const cursorChanged = e => { };

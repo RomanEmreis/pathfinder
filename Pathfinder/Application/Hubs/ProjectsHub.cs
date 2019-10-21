@@ -11,7 +11,10 @@ namespace Pathfinder.Application.Hubs {
             await Clients.All.SendAsync(nameof(CreateProject), project);
 
         public async Task CollaboratorJoinsProject(ProjectViewModel project) => 
-            await Clients.All.SendAsync(nameof(CollaboratorJoinsProject), project).ConfigureAwait(false);
+            await Clients.All.SendAsync(nameof(CollaboratorJoinsProject), project);
+
+        public async Task CollaboratorLeavesProject(ProjectViewModel project) =>
+            await Clients.All.SendAsync(nameof(CollaboratorLeavesProject), project);
 
         public override Task OnConnectedAsync() => base.OnConnectedAsync();
 
