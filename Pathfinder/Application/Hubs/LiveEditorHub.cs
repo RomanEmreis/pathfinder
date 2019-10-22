@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
+using Pathfinder.Application.BuildingTools;
 using Pathfinder.Application.Services;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Pathfinder.Application.Hubs {
@@ -41,6 +43,26 @@ namespace Pathfinder.Application.Hubs {
 
         public async Task CodeChanged(string projectName, object code) =>
             await Clients.GroupExcept(projectName, Context.ConnectionId).SendAsync(nameof(CodeChanged), projectName, code);
+
+        public async Task CompileProject(string projectName, string code) {
+            using var sw = new StringWriter();
+
+            Console.SetOut(sw);
+            Console.SetError(sw);
+
+            var compiler              = new Compiler();
+            var assemblyBytes         = await Task.Run(() => compiler.Compile(projectName, code));
+
+            var runner                = new Runner();
+            var buildResult           = await Task.Run(() => runner.Execute(assemblyBytes, Array.Empty<string>()));
+
+            buildResult.ResultMessage = sw.ToString();
+
+            await Clients.Group(projectName).SendAsync(nameof(ProjectCompiled), projectName, buildResult);
+        }
+
+        public async Task ProjectCompiled(string projectName, BuildingResult buildResult) =>
+            await Clients.Group(projectName).SendAsync(nameof(ProjectCompiled), projectName, buildResult);
 
         public override Task OnConnectedAsync() => base.OnConnectedAsync();
 

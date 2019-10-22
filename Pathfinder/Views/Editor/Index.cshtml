@@ -5,12 +5,5 @@
     <script src="~/js/editor.js" asp-append-version="true"></script>
 }
 
-<div id="editor">using System;
-
-namespace @Model.Name {
-    class Program {
-        static void Main(string[] args) {
-            Console.WriteLine("Hello World!");
-        }
-    }
-}</div>
+<div id="editor">@Model.Code</div>
+<div id="output"></div>

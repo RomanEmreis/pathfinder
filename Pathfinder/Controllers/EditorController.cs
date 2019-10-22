@@ -36,8 +36,9 @@ namespace Pathfinder.Controllers {
                 await _projectsHubContext.Clients.All.SendAsync(nameof(ProjectsHub.CollaboratorJoinsProject), project);
             } else {
                 return BadRequest();
-            } 
+            }
 
+            project.GenerateTemplateCode();
             return View(project);
         }
     }
