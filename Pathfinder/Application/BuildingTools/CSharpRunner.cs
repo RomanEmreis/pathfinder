@@ -1,10 +1,20 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 namespace Pathfinder.Application.BuildingTools {
-    internal class Runner {
-        public BuildingResult Execute(byte[] compiledAssembly, string[] args) {
+    internal class CSharpRunner : IRunner {
+        public Task<BuildingResult> ExecuteAsync(byte[] compiledAssembly, string[] arguments) {
+            if (compiledAssembly.Length == 0) return Task.FromResult(new BuildingResult());
+
+            var compiledAssemblyBytes = compiledAssembly;
+            var args                  = arguments;
+
+            return Task.Run(() => Execute(compiledAssemblyBytes, args));
+        }
+
+        private BuildingResult Execute(byte[] compiledAssembly, string[] args) {
             var (success, assemblyLoadContextWeakRef) = LoadAndExecute(compiledAssembly, args);
 
             for (var i = 0; i < 8 && assemblyLoadContextWeakRef.IsAlive; i++) {

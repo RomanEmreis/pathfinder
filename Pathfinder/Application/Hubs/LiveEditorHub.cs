@@ -2,28 +2,31 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Pathfinder.Application.BuildingTools;
+using Pathfinder.Application.BuildingTools.Background;
 using Pathfinder.Application.Services;
 using System;
-using System.IO;
 using System.Threading.Tasks;
 
 namespace Pathfinder.Application.Hubs {
     [Authorize]
     public class LiveEditorHub : Hub {
         private readonly UserManager<IdentityUser> _userManager;
-        private readonly IProjectService _projectsService;
-        private readonly ICollaboratorsService _collaboratorsService;
-        private readonly IHubContext<ProjectsHub> _projectsHubContext;
+        private readonly IProjectService           _projectsService;
+        private readonly ICollaboratorsService     _collaboratorsService;
+        private readonly IHubContext<ProjectsHub>  _projectsHubContext;
+        private readonly IBuildingQueue            _buildingQueue;
 
         public LiveEditorHub(
             IProjectService projectsService,
             ICollaboratorsService collaboratorsService,
             UserManager<IdentityUser> userManager,
-            IHubContext<ProjectsHub> projectsHubContext) {
+            IHubContext<ProjectsHub> projectsHubContext,
+            IBuildingQueue buildingQueue) {
             _projectsService = projectsService;
             _userManager = userManager;
             _collaboratorsService = collaboratorsService;
             _projectsHubContext = projectsHubContext;
+            _buildingQueue = buildingQueue;
         }
 
         public async Task CollaboratorJoinsProject(string projectName) => 
@@ -44,22 +47,8 @@ namespace Pathfinder.Application.Hubs {
         public async Task CodeChanged(string projectName, object code) =>
             await Clients.GroupExcept(projectName, Context.ConnectionId).SendAsync(nameof(CodeChanged), projectName, code);
 
-        public async Task CompileProject(string projectName, string code) {
-            using var sw = new StringWriter();
-
-            Console.SetOut(sw);
-            Console.SetError(sw);
-
-            var compiler              = new Compiler();
-            var assemblyBytes         = await Task.Run(() => compiler.Compile(projectName, code));
-
-            var runner                = new Runner();
-            var buildResult           = await Task.Run(() => runner.Execute(assemblyBytes, Array.Empty<string>()));
-
-            buildResult.ResultMessage = sw.ToString();
-
-            await Clients.Group(projectName).SendAsync(nameof(ProjectCompiled), projectName, buildResult);
-        }
+        public async Task CompileProject(BuildingTask buildContext) => 
+            await _buildingQueue.QueueAsync(buildContext);
 
         public async Task ProjectCompiled(string projectName, BuildingResult buildResult) =>
             await Clients.Group(projectName).SendAsync(nameof(ProjectCompiled), projectName, buildResult);

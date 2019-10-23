@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Pathfinder.Application.BuildingTools;
+using Pathfinder.Application.BuildingTools.Background;
 using Pathfinder.Application.Extensions;
 using Pathfinder.Application.Hubs;
 using Pathfinder.Application.Services;
@@ -18,10 +20,13 @@ namespace Pathfinder {
             services
                 .ConfigureSql(Configuration)
                 .ConfigureIdentity()
-                .ConfigureAuthentication(Configuration);
-
-            services.AddSingleton<IProjectService, ProjectService>();
-            services.AddSingleton<ICollaboratorsService, CollaboratorsService>();
+                .ConfigureAuthentication(Configuration)
+                .AddHostedService<BuildingService>()
+                .AddSingleton<IBuildingQueue, BuildingQueue>()
+                .AddSingleton<IProjectService, ProjectService>()
+                .AddSingleton<ICollaboratorsService, CollaboratorsService>()
+                .AddTransient<ICompiler, CSharpCompiler>()
+                .AddTransient<IRunner, CSharpRunner>();
 
             services.AddControllersWithViews();
             services.AddRazorPages();
@@ -33,7 +38,7 @@ namespace Pathfinder {
                 app.UseDeveloperExceptionPage();
                 app.UseDatabaseErrorPage();
             } else {
-                app.UseExceptionHandler("/Home/Error");
+                app.UseExceptionHandler(DefaultErrorRoute);
                 app.UseHsts();
             }
             app.UseHttpsRedirection();
@@ -49,8 +54,8 @@ namespace Pathfinder {
                     name:    DefaultRouteName,
                     pattern: DefaultRoutePattern);
                 endpoints.MapRazorPages();
-                endpoints.MapHub<ProjectsHub>("/projects");
-                endpoints.MapHub<LiveEditorHub>("/liveeditor");
+                endpoints.MapHub<ProjectsHub>(ProjectsHubRoute);
+                endpoints.MapHub<LiveEditorHub>(EditorHubRoute);
             });
         }
     }
