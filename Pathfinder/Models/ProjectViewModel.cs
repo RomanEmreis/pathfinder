@@ -22,14 +22,16 @@ namespace Pathfinder.Models {
         internal void GenerateTemplateCode() {
             if (!string.IsNullOrWhiteSpace(Code)) return;
 
-            Code = "using System;\n\n"
-            + $"namespace {Name} {{\n"
-            + "    class Program {\n"
-            + "        static void Main(string[] args) {\n"
-            + "            Console.WriteLine(\"Hello World!\");\n"
-            + "        }\n"
-            + "    }\n"
-            + "}\n";
+            Code = 
+                @$"using System;
+
+namespace {Name} {{
+    class Program {{
+        static void Main(string[] args) {{
+            Console.WriteLine(""Hello World!"");
+        }}
+    }}
+}}";
         }
     }
 }

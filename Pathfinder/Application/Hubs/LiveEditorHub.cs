@@ -44,8 +44,8 @@ namespace Pathfinder.Application.Hubs {
             }
         }
 
-        public async Task CodeChanged(string projectName, object code) =>
-            await Clients.GroupExcept(projectName, Context.ConnectionId).SendAsync(nameof(CodeChanged), projectName, code);
+        public async Task CodeChanged(string projectName, object changes) =>
+            await Clients.GroupExcept(projectName, Context.ConnectionId).SendAsync(nameof(CodeChanged), projectName, changes);
 
         public async Task CompileProject(BuildingTask buildContext) => 
             await _buildingQueue.QueueAsync(buildContext);

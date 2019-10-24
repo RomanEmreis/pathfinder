@@ -1,85 +1,102 @@
-﻿var connection   = new signalR.HubConnectionBuilder()
+﻿"use strict";
+var connection = new signalR.HubConnectionBuilder()
     .withUrl("/liveeditor")
     .build();
 
-connection.on('CodeChanged', (projectName, delta) => codeChanged(projectName, delta));
-connection.on('ProjectCompiled', (projectName, buildResult) => projectCompiled(projectName, buildResult));
+connection.on('CodeChanged', async (projectName, delta) => await codeChanged(projectName, delta));
+connection.on('ProjectCompiled', async (projectName, buildResult) => await projectCompiled(projectName, buildResult));
 
 connection
     .start()
-    .then(() => connectionEstablished())
+    .then(async () => await connectionEstablished())
     .catch(err => onError(err));
 
-var silent      = false;
-var bp          = [];
-var editor      = ace.edit("editor");
+var silent = false;
+var bp     = [];
 
-editor.setTheme("ace/theme/tomorrow");
-editor.session.setMode("ace/mode/csharp");
-document.getElementById('editor').style.fontSize = '14px';
+var editor = null;
+var output = null;
 
-editor.commands.addCommand({
-    name: 'compileCommand',
-    bindKey: { win: 'F5' },
-    exec: async editor => {
-        let projectName  = await getCurrentProjectName();
-        let code         = editor.getValue();
-        /*let breakpoints  = editor.session.getBreakpoints();*/
-        
-        let buildContext = {
-            projectName: projectName,
-            sourceCode: code,
-            breakpoints: bp
-        };
+const init = () => {
+    require(['vs/editor/editor.main'], createEditor);
+    window.removeEventListener("load", init);
+};
 
-        connection.invoke('CompileProject', buildContext);
-    },
-    readOnly: false
-});
+const dispose = async () => {
+    connection.invoke('CollaboratorLeavesProject', project.name);
+    window.removeEventListener("beforeunload", dispose);
+};
 
-editor.session.on('change', delta => textChanged(delta));
-editor.on("guttermousedown", e => setBreakpoint(e));
-editor.session.selection.on('changeSelection', e => selectionChanged(e));
-editor.session.selection.on('changeCursor', e => cursorChanged(e));
+window.addEventListener("load", init);
+window.addEventListener("beforeunload", dispose);
 
-var output = ace.edit("output");
+const createEditor = () => {
+    editor = monaco.editor.create(document.getElementById('editor'), {
+        value: project.code,
+        language: 'csharp'
+    });
 
-output.setTheme("ace/theme/tomorrow");
-output.session.setMode("ace/mode/text");
-output.setReadOnly(true);
-document.getElementById('output').style.fontSize = '14px';
+    editor.onDidChangeModelContent(async e => await textChanged(e));
 
-$(window).on("beforeunload", () => editorClosed())
+    editor.addCommand(monaco.KeyCode.F5, () => buildProject());
+
+    editor.layout();
+
+    output = monaco.editor.create(document.getElementById('output'), {
+        readOnly: false
+    });
+    output.layout();
+};
 
 const connectionEstablished = async () => {
-    let projectName = await getCurrentProjectName();
-    connection.invoke('CollaboratorJoinsProject', projectName);
+    connection.invoke('CollaboratorJoinsProject', project.name);
 };
 
-const editorClosed = async () => {
-    let projectName = await getCurrentProjectName();
-    connection.invoke('CollaboratorLeavesProject', projectName);
-};
-
-const getCurrentProjectName = async () => {
-    let searchParams = new URLSearchParams(window.location.search);
-    return searchParams.get('projectName');
-};
-
-const codeChanged = (projectName, delta) => {
+const codeChanged = async (projectName, changes) => {
     silent = true;
-    editor.session.doc.applyDeltas([delta]);
+
+    let model = editor.getModel();
+    model.applyEdits(changes);
+
     silent = false;
 };
 
-const projectCompiled = (projectName, buildResult) => {
+const textChanged = async e => {
+    if (!silent) {
+        connection.invoke('CodeChanged', project.name, e.changes);
+    }
+};
+
+const writeToOutput = text => {
+    var line  = editor.getPosition();
+    var range = new monaco.Range(line.lineNumber, 1, line.lineNumber, 1);
+    var id    = { major: 1, minor: 1 };
+    var op = { identifier: id, range: range, text: text + '\n', forceMoveMarkers: true };
+
+    output.executeEdits("my-source", [op]);
+};
+
+const buildProject = () => {
+    let code = editor.getValue();
+
+    let buildContext = {
+        projectName: project.name,
+        sourceCode: code,
+        breakpoints: bp
+    };
+
+    connection.invoke('CompileProject', buildContext);
+}
+
+const projectCompiled = async (projectName, buildResult) => {
     let buildMessage = buildResult.success
         ? 'Build project ' + projectName + ' successfully complete'
         : 'Build project ' + projectName + ' complete with errors';
 
     console.log(buildMessage);
-    output.insert(buildMessage + '\n');
-    output.insert(buildResult.resultMessage + '\n');
+
+    writeToOutput(buildMessage);
+    writeToOutput(buildResult.resultMessage);
 
     if (buildResult.success) {
         console.log(buildResult.resultMessage);
@@ -88,38 +105,27 @@ const projectCompiled = (projectName, buildResult) => {
     }
 };
 
-const textChanged = async delta => {
-    if (!silent) {
-        let projectName = await getCurrentProjectName();
-        connection.invoke('CodeChanged', projectName, delta);
-    }
-};
+//const setBreakpoint = e => {
+//    let target = e.domEvent.target;
 
-const selectionChanged = e => { };
+//    if (target.className.indexOf("ace_gutter-cell") == -1) return;
+//    if (!editor.isFocused()) return;
 
-const cursorChanged = e => { };
+//    if (e.clientX > 25 + target.getBoundingClientRect().left) return;
 
-const setBreakpoint = e => {
-    let target = e.domEvent.target;
+//    var breakpoints = e.editor.session.getBreakpoints(row, 0);
+//    var row         = e.getDocumentPosition().row;
 
-    if (target.className.indexOf("ace_gutter-cell") == -1) return;
-    if (!editor.isFocused()) return;
+//    if (typeof breakpoints[row] === typeof undefined) {
+//        bp.push(row);
+//        e.editor.session.setBreakpoint(row);
+//    } else {
+//        var index = bp.indexOf(row);
+//        if (index > -1) {
+//            bp.splice(index, 1);
+//        }
+//        e.editor.session.clearBreakpoint(row);
+//    }
 
-    if (e.clientX > 25 + target.getBoundingClientRect().left) return;
-
-    var breakpoints = e.editor.session.getBreakpoints(row, 0);
-    var row         = e.getDocumentPosition().row;
-
-    if (typeof breakpoints[row] === typeof undefined) {
-        bp.push(row);
-        e.editor.session.setBreakpoint(row);
-    } else {
-        var index = bp.indexOf(row);
-        if (index > -1) {
-            bp.splice(index, 1);
-        }
-        e.editor.session.clearBreakpoint(row);
-    }
-
-    e.stop();
-};
+//    e.stop();
+//};
