@@ -26,7 +26,7 @@ namespace Pathfinder.Tests {
         }
 
         [Fact]
-        public async Task CExecuteAsync_ExceptionCode_Compilation_Successfully_Complete() {
+        public async Task ExecuteAsync_ExceptionCode_Compilation_Successfully_Complete() {
             var compiler = new CSharpCompiler();
             var bytes = await compiler.CompileAsync(new BuildingTask("exCode", CSharpSnippets.ExceptionCode));
             var runner = new CSharpRunner();

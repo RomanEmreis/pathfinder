@@ -5,5 +5,7 @@
         public bool IsAssemblyAlive { get; set; }
 
         public string ResultMessage { get; set; } = null!;
+
+        public int CurrentLine { get; set; }
     }
 }

@@ -95,3 +95,21 @@ body {
 .new-room-form {
     width: 50%;
 }
+
+.debugging-breakpoint {
+    background: #d00000;
+    border-radius: 50%;
+    margin-left: 1px;
+    clip-path: circle(20% at center center);
+}
+
+.debugging-line-point {
+    background: #ddb000;
+    border-radius: 50%;
+    margin-left: 1px;
+    clip-path: circle(10% at center center);
+}
+
+.debugging-line {
+    background: #ddb000;
+}

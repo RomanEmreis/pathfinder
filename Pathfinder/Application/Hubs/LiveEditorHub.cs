@@ -50,6 +50,18 @@ namespace Pathfinder.Application.Hubs {
         public async Task CompileProject(BuildingTask buildContext) => 
             await _buildingQueue.QueueAsync(buildContext);
 
+        public async Task StepOver(BuildingTask buildContext) =>
+            await _buildingQueue.QueueAsync(buildContext);
+
+        public async Task StepInto(BuildingTask buildContext) =>
+            await _buildingQueue.QueueAsync(buildContext);
+
+        public async Task SetBreakpoint(string projectName, object range) =>
+            await Clients.GroupExcept(projectName, Context.ConnectionId).SendAsync(nameof(SetBreakpoint), range);
+
+        public async Task RemoveBreakpoint(string projectName, object range, object breakpoint) =>
+            await Clients.GroupExcept(projectName, Context.ConnectionId).SendAsync(nameof(RemoveBreakpoint), range, breakpoint);
+
         public async Task ProjectCompiled(string projectName, BuildingResult buildResult) =>
             await Clients.Group(projectName).SendAsync(nameof(ProjectCompiled), projectName, buildResult);
 

@@ -32,5 +32,11 @@
                       }
                   }
               }";
+
+        internal const string GoodConsoleWriteLineString = @"Console.WriteLine(""Hello World!"");";
+
+        internal const string BadConsoleWriteLineString = @"Console.WriteLine(""Hello World!"")";
+
+        internal const string ExceptionConsoleWriteLineString = @"throw new InvalidOperationException();";
     }
 }

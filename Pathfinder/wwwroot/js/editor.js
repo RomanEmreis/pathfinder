@@ -5,6 +5,10 @@ var connection = new signalR.HubConnectionBuilder()
 
 connection.on('CodeChanged', async (projectName, delta) => await codeChanged(projectName, delta));
 connection.on('ProjectCompiled', async (projectName, buildResult) => await projectCompiled(projectName, buildResult));
+connection.on('StepOver', async buildContext => await onStepOver(buildContext));
+connection.on('StepInto', async buildContext => await onStepInto(buildContext));
+connection.on('SetBreakpoint', async range => await onSetBreakpoint(range));
+connection.on('RemoveBreakpoint', async (range, breakpoint) => await onRemoveBreakpoint(range, breakpoint));
 
 connection
     .start()
@@ -16,6 +20,8 @@ var bp     = [];
 
 var editor = null;
 var output = null;
+var decorations = [];
+var currentDebuggingLine = 0;
 
 const init = () => {
     require(['vs/editor/editor.main'], createEditor);
@@ -36,9 +42,12 @@ const createEditor = () => {
         language: 'csharp'
     });
 
-    editor.onDidChangeModelContent(async e => await textChanged(e));
+    editor.onDidChangeModelContent(textChanged);
+    editor.onMouseDown(tryHandleBreakpoint);
 
-    editor.addCommand(monaco.KeyCode.F5, () => buildProject());
+    editor.addCommand(monaco.KeyCode.F5, buildProject);
+    editor.addCommand(monaco.KeyCode.F10, stepOver);
+    editor.addCommand(monaco.KeyCode.F11, stepInto);
 
     editor.layout();
 
@@ -61,7 +70,7 @@ const codeChanged = async (projectName, changes) => {
     silent = false;
 };
 
-const textChanged = async e => {
+const textChanged = e => {
     if (!silent) {
         connection.invoke('CodeChanged', project.name, e.changes);
     }
@@ -82,11 +91,58 @@ const buildProject = () => {
     let buildContext = {
         projectName: project.name,
         sourceCode: code,
-        breakpoints: bp
+        breakpoints: bp,
+        currentLine: currentDebuggingLine,
+        isDebugging: bp.length > 0,
+        isRunToNextBreakpoint: true
     };
 
     connection.invoke('CompileProject', buildContext);
 }
+
+const stepOver = () => {
+    let code = editor.getValue();
+    
+    let buildContext = {
+        projectName: project.name,
+        sourceCode: code,
+        breakpoints: bp,
+        currentLine: currentDebuggingLine,
+        isDebugging: true,
+        isRunToNextBreakpoint: false
+    };
+
+    connection.invoke('StepOver', buildContext);
+}
+
+const onStepOver = async buildContext => {
+    currentDebuggingLine = ++buildContext.currentLine;
+    let currentRange = new monaco.Range(currentDebuggingLine, 1, currentDebuggingLine, 1);
+
+    removeDebuggingLine()
+    setDebuggingLine(currentRange);
+
+    await writeResult(buildContext);
+};
+
+const stepInto = () => {
+    let code = editor.getValue();
+    
+    let buildContext = {
+        projectName: project.name,
+        sourceCode: code,
+        breakpoints: bp,
+        currentLine: currentDebuggingLine,
+        isDebugging: true,
+        isRunToNextBreakpoint: false
+    };
+
+    connection.invoke('StepInto', buildContext);
+}
+
+const onStepInto = async buildContext => {
+
+};
 
 const projectCompiled = async (projectName, buildResult) => {
     let buildMessage = buildResult.success
@@ -94,8 +150,14 @@ const projectCompiled = async (projectName, buildResult) => {
         : 'Build project ' + projectName + ' complete with errors';
 
     console.log(buildMessage);
-
     writeToOutput(buildMessage);
+
+    await writeResult(buildResult);
+};
+
+const writeResult = async buildResult => {
+    if (!buildResult.resultMessage) return;
+
     writeToOutput(buildResult.resultMessage);
 
     if (buildResult.success) {
@@ -105,27 +167,82 @@ const projectCompiled = async (projectName, buildResult) => {
     }
 };
 
-//const setBreakpoint = e => {
-//    let target = e.domEvent.target;
+const tryHandleBreakpoint = e => {
+    let targetName = e.target.element.className;
+    if (targetName === 'line-numbers') {
+        let currentRange = e.target.range;
+        let model        = editor.getModel();
 
-//    if (target.className.indexOf("ace_gutter-cell") == -1) return;
-//    if (!editor.isFocused()) return;
+        var decorationsInRange = model.getDecorationsInRange(currentRange);
+        var existedBreakpoint  = decorationsInRange.find(isBreakpoint);
 
-//    if (e.clientX > 25 + target.getBoundingClientRect().left) return;
+        if (existedBreakpoint) {
+            removeBreakpoint(currentRange, existedBreakpoint)
+        } else {
+            setBreakpoint(currentRange);
+        }
+    }
+};
 
-//    var breakpoints = e.editor.session.getBreakpoints(row, 0);
-//    var row         = e.getDocumentPosition().row;
+const isBreakpoint = (element, index, array) => element.options.linesDecorationsClassName === 'debugging-breakpoint';
 
-//    if (typeof breakpoints[row] === typeof undefined) {
-//        bp.push(row);
-//        e.editor.session.setBreakpoint(row);
-//    } else {
-//        var index = bp.indexOf(row);
-//        if (index > -1) {
-//            bp.splice(index, 1);
-//        }
-//        e.editor.session.clearBreakpoint(row);
-//    }
+const isDebuggingLine = (element, index, array) => element.options.linesDecorationsClassName === 'debugging-line';
 
-//    e.stop();
-//};
+const setBreakpoint = range => {
+    onSetBreakpoint(range);
+    connection.invoke('SetBreakpoint', project.name, range);
+};
+
+const onSetBreakpoint = range => {
+    decorations = editor.deltaDecorations([], [createBreakpoint(range)]);
+    bp.push(range.startLineNumber);
+};
+
+const setDebuggingLine = range => {
+    decorations = editor.deltaDecorations([], [createDebuggingLine(range)]);
+};
+
+const removeBreakpoint = (range, breakpoint) => {
+    onRemoveBreakpoint(range, breakpoint)
+    connection.invoke('RemoveBreakpoint', project.name, range, breakpoint);
+};
+
+const onRemoveBreakpoint = (range, breakpoint) => {
+    var breakpoints     = [...decorations];
+    var breakpointIndex = breakpoints.indexOf(breakpoint.id);
+    if (breakpointIndex > -1) {
+        breakpoints.splice(breakpointIndex, 1);
+    }
+
+    decorations = editor.deltaDecorations(decorations, breakpoints);
+
+    var indexOfBp = bp.indexOf(range.startLineNumber);
+    if (indexOfBp > -1) {
+        bp.splice(indexOfBp, 1);
+    }
+};
+
+const removeDebuggingLine = () => {
+    decorations = editor.deltaDecorations(decorations, []);
+};
+
+const createBreakpoint = range => {
+    return {
+        range: range,
+        options: {
+            isWholeLine: false,
+            linesDecorationsClassName: 'debugging-breakpoint'
+        }
+    };
+};
+
+const createDebuggingLine = range => {
+    return {
+        range: range,
+        options: {
+            isWholeLine: true,
+            className: 'debugging-line',
+            linesDecorationsClassName: 'debugging-line-point'
+        }
+    };
+};

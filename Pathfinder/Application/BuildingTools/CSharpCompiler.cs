@@ -9,8 +9,6 @@ using System.Threading.Tasks;
 
 namespace Pathfinder.Application.BuildingTools {
     internal class CSharpCompiler : ICompiler {
-        private const string _missingParametersMessage = "Missing source code or assembly name";
-
         public Task<byte[]> CompileAsync(BuildingTask buildingTask) {
             if (buildingTask is null) throw new ArgumentNullException(nameof(buildingTask));
 
@@ -18,7 +16,7 @@ namespace Pathfinder.Application.BuildingTools {
             var sourceCode   = buildingTask.SourceCode;
 
             return string.IsNullOrWhiteSpace(assemblyName) || string.IsNullOrWhiteSpace(sourceCode)
-                ? throw new InvalidOperationException(_missingParametersMessage)
+                ? throw new InvalidOperationException(ErrorConstants.MissingParametersMessage)
                 : Task.Run(() => Compile(assemblyName, sourceCode));
         }
 
@@ -58,7 +56,7 @@ namespace Pathfinder.Application.BuildingTools {
                 new[] { parsedSyntaxTree },
                 references: references,
                 options: new CSharpCompilationOptions(OutputKind.ConsoleApplication,
-                    optimizationLevel: OptimizationLevel.Debug,
+                    optimizationLevel: OptimizationLevel.Release,
                     assemblyIdentityComparer: DesktopAssemblyIdentityComparer.Default));
         }
     }

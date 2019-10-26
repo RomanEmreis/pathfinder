@@ -7,10 +7,16 @@ namespace Pathfinder.Application.BuildingTools.Background {
         public BuildingTask(string projectName, string sourceCode) =>
             (ProjectName, SourceCode) = (projectName, sourceCode);
 
-        public string ProjectName { get; set; }
+        public string ProjectName { get; set; } = default!;
 
-        public string SourceCode { get; set; }
+        public string SourceCode { get; set; } = default!;
 
-        public IReadOnlyCollection<int> Breakpoints { get; set; }
+        public IReadOnlyCollection<int> Breakpoints { get; set; } = default!;
+
+        public bool IsDebugging { get; set; }
+
+        public bool IsRunToNextBreakpoint { get; set; }
+
+        public int CurrentLine { get; set; }
     }
 }

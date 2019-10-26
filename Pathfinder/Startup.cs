@@ -25,8 +25,10 @@ namespace Pathfinder {
                 .AddSingleton<IBuildingQueue, BuildingQueue>()
                 .AddSingleton<IProjectService, ProjectService>()
                 .AddSingleton<ICollaboratorsService, CollaboratorsService>()
+                .AddSingleton<IDebuggingSessions, CSharpDebuggingSessions>()
                 .AddTransient<ICompiler, CSharpCompiler>()
-                .AddTransient<IRunner, CSharpRunner>();
+                .AddTransient<IRunner, CSharpRunner>()
+                .AddScoped<IDebugger, CSharpDebugger>();
 
             services.AddControllersWithViews();
             services.AddRazorPages();
