@@ -28,5 +28,12 @@ namespace Pathfinder.Application.BuildingTools {
                 return new ValueTask<IDebuggingSession>(csharpDebuggingSession);
             }
         }
+
+        public ValueTask EndSession(string projectName) {
+            if (_sessions.TryRemove(projectName, out var removedSession))
+                removedSession.Dispose();
+
+            return new ValueTask();
+        }
     }
 }

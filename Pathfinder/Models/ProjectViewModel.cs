@@ -18,6 +18,8 @@ namespace Pathfinder.Models {
         [DisplayName("Collaborators")]
         public HashSet<IProjectCollaborator> Collaborators { get; } = new HashSet<IProjectCollaborator>();
 
+        public bool HasCollaborators => Collaborators?.Count > 0;
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void GenerateTemplateCode() {
             if (!string.IsNullOrWhiteSpace(Code)) return;

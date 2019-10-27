@@ -60,5 +60,13 @@ namespace Pathfinder.Tests {
 
             result.CurrentLine.Should().Be(breakpoint);
         }
+
+        [Fact]
+        public void DebugAsync_Disposed_Should_Throw_ObjectDisposedException() {
+            var session = new CSharpDebuggingSession(new CSharpDebugger());
+            session.Dispose();
+            Func<Task<BuildingResult>> act = () => session.DebugAsync(new BuildingTask(null, null));
+            act.Should().ThrowExactly<ObjectDisposedException>();
+        }
     }
 }

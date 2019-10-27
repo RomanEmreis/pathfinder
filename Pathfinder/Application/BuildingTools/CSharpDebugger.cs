@@ -7,20 +7,17 @@ using System;
 
 namespace Pathfinder.Application.BuildingTools {
     internal sealed class CSharpDebugger : IDebugger {
-        public async Task<ScriptState<object>?> DebugAsync(CSharpDebuggingContext context) {
+        public async Task DebugAsync(CSharpDebuggingContext context) {
             if (context is null)                throw new ArgumentNullException(nameof(context));
-            if (context.SourceText.Length == 0) return default;
+            if (context.SourceText.Length == 0) return;
 
             var options        = CreateDefaultOptions();
             var debuggingBlock = FetchDebuggingBlocks(context);
-            var debuggerState  = default(ScriptState<object>);
 
             foreach (TextLineDebugger line in debuggingBlock) {
-                debuggerState = await line.DebugAsync(debuggerState, options);
+                context.DebuggingState = await line.DebugAsync(context.DebuggingState, options);
                 context.CurrentLine++;
             }
-
-            return debuggerState;
         }
 
         private IEnumerable<TextLine> FetchDebuggingBlocks(in CSharpDebuggingContext context) {

@@ -26,6 +26,7 @@ namespace Pathfinder {
                 .AddSingleton<IProjectService, ProjectService>()
                 .AddSingleton<ICollaboratorsService, CollaboratorsService>()
                 .AddSingleton<IDebuggingSessions, CSharpDebuggingSessions>()
+                .AddTransient<IEditorService, EditorService>()
                 .AddTransient<ICompiler, CSharpCompiler>()
                 .AddTransient<IRunner, CSharpRunner>()
                 .AddScoped<IDebugger, CSharpDebugger>();

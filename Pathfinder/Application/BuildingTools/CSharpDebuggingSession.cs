@@ -1,6 +1,5 @@
 ﻿using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.CodeAnalysis.Text;
-using Microsoft.Extensions.DependencyInjection;
 using Pathfinder.Application.BuildingTools.Background;
 using System;
 using System.IO;
@@ -9,7 +8,9 @@ using System.Threading.Tasks;
 
 namespace Pathfinder.Application.BuildingTools {
     public class CSharpDebuggingSession : IDebuggingSession {
-        private readonly IDebugger            _debugger;
+        private          bool                 _isDisposed    = false;
+
+        private          IDebugger            _debugger      = default!;
         private          ScriptState<object>? _debuggerState = default;
         private          SourceText           _sourceText    = default!;
 
@@ -21,6 +22,7 @@ namespace Pathfinder.Application.BuildingTools {
         }
 
         public async Task<BuildingResult> DebugAsync(BuildingTask buildingTask) {
+            CheckDisposed();
             if (buildingTask is null) throw new ArgumentNullException(nameof(buildingTask));
 
             var assemblyName = buildingTask.ProjectName;
@@ -38,9 +40,10 @@ namespace Pathfinder.Application.BuildingTools {
             _nextBreakpoint      = NextBreakpoint(buildingTask);
 
             var debuggingContext = CreateDebuggingContext();
-            _debuggerState       = await _debugger.DebugAsync(debuggingContext);
+            await _debugger.DebugAsync(debuggingContext);
 
-            _currentLine         = debuggingContext.CurrentLine;
+            _debuggerState = debuggingContext.DebuggingState;
+            _currentLine   = debuggingContext.CurrentLine;
 
             if (_currentLine == _sourceText.Lines.Count)
                 Reset();
@@ -49,7 +52,11 @@ namespace Pathfinder.Application.BuildingTools {
         }
 
         private CSharpDebuggingContext CreateDebuggingContext() => 
-            new CSharpDebuggingContext(_sourceText, _nextBreakpoint, _currentLine);
+            new CSharpDebuggingContext(
+                _sourceText, 
+                _nextBreakpoint, 
+                _currentLine, 
+                default);
 
         private int NextBreakpoint(BuildingTask buildingTask) {
             var currentLine = buildingTask.CurrentLine;
@@ -67,6 +74,18 @@ namespace Pathfinder.Application.BuildingTools {
             _sourceText     = default!;
             _currentLine    = 0;
             _nextBreakpoint = 0;
+        }
+
+        private void CheckDisposed() {
+            if (_isDisposed) throw new ObjectDisposedException(nameof(CSharpDebuggingSession));
+        }
+
+        public void Dispose() {
+            if (_isDisposed) return;
+
+            Reset();
+            _debugger   = default!;
+            _isDisposed = true;
         }
     }
 }

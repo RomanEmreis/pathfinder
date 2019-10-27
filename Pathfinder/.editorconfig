@@ -8,3 +8,15 @@ dotnet_diagnostic.CA1052.severity = silent
 
 # CA1822: Пометьте члены как статические
 dotnet_diagnostic.CA1822.severity = suggestion
+
+# CA2000: Ликвидировать объекты перед потерей области
+dotnet_diagnostic.CA2000.severity = suggestion
+
+# CA1816: Методы Dispose должны вызывать SuppressFinalize
+dotnet_diagnostic.CA1816.severity = suggestion
+
+# CA1063: Правильно реализуйте IDisposable
+dotnet_diagnostic.CA1063.severity = suggestion
+
+# CA1303: Не передавать литералы в качестве локализованных параметров
+dotnet_diagnostic.CA1303.severity = suggestion
