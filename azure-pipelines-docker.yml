@@ -3,7 +3,7 @@ variables:
 
 steps:
 - script: |
-    docker build -t $(dockerLogin)/$(imageName) .
+    docker build -t $(dockerLogin)/$(imageName) -f ./pathfinder/Dockerfile.txt .
     docker login -u $(dockerLogin) -p $(dockerPassword)
     docker push $(dockerLogin)/$(imageName)
 
