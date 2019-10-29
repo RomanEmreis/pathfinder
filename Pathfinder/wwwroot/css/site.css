@@ -73,23 +73,21 @@ body {
 }
 
 #editor {
-    margin-top: 60px;
     position: absolute;
+    top: 60px;
     left: 0;
-    top: 0;
+    bottom: 0;
     width: 100%;
     height: 70%;
-    overflow: hidden;
 }
 
 #output {
-    margin-top: 650px;
     position: absolute;
     left: 0;
-    top: 0;
+    bottom: 0;
     width: 100%;
     height: 30%;
-    overflow: hidden;
+    border-top: 1px solid #e5e5e5;
 }
 
 .new-room-form {

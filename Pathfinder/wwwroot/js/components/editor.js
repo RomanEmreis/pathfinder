@@ -96,7 +96,8 @@ class CodeEditor {
     };
 
     onSetBreakpoint = range => {
-        this.decorations = this.editor.deltaDecorations([], [this.createBreakpoint(range)]);
+        let deltaDecorations = this.editor.deltaDecorations([], [this.createBreakpoint(range)]);
+        this.decorations = this.decorations.concat(deltaDecorations);
         this.breakpoints.push(range.startLineNumber);
     };
 
@@ -122,22 +123,27 @@ class CodeEditor {
             newBreakpoints.splice(breakpointIndex, 1);
         }
 
-        this.decorations = this.editor.deltaDecorations(this.decorations, newBreakpoints);
-
         var indexOfBp = this.breakpoints.indexOf(range.startLineNumber);
         if (indexOfBp > -1) {
             this.breakpoints.splice(indexOfBp, 1);
         }
+
+        var deltaDecorations = this.editor.deltaDecorations([breakpoint.id], []);
+        this.decorations = newBreakpoints;
     };
 
     removeDebuggingLine = () => {
-        this.decorations = this.editor.deltaDecorations(this.decorations, []);
+        let debuggingLine = this.editor.getModel().getAllDecorations().find(this.isDebuggingLine);
+        if (debuggingLine) {
+            var deltaDecorations = this.editor.deltaDecorations([debuggingLine.id], []);
+        }
     };
 
     isDebuggingLine = (element, index, array) => element.options.className === CodeEditor.debuggingLineCss;
 
     setDebuggingLine = range => {
-        this.decorations = this.editor.deltaDecorations([], [this.createDebuggingLine(range)]);
+        var deltaDecorations = this.editor.deltaDecorations([], [this.createDebuggingLine(range)]);
+        this.decorations = this.decorations.concat(deltaDecorations);
     };
 
     createDebuggingLine = range => {

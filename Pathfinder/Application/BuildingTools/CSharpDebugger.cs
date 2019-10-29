@@ -15,15 +15,18 @@ namespace Pathfinder.Application.BuildingTools {
             var debuggingBlock = FetchDebuggingBlocks(context);
 
             foreach (TextLineDebugger line in debuggingBlock) {
-                context.DebuggingState = await line.DebugAsync(context.DebuggingState, options);
+                context.DebuggingState = await line.DebugAsync(/*context.DebuggingState*/default, options);
                 context.CurrentLine++;
             }
         }
 
-        private IEnumerable<TextLine> FetchDebuggingBlocks(in CSharpDebuggingContext context) {
+        private IEnumerable<TextLine> FetchDebuggingBlocks(CSharpDebuggingContext context) {
+            var breakpoint  = context.Breakpoint;
+            var currentLine = context.CurrentLine;
+
             return context.SourceText.Lines
-                .Skip(context.CurrentLine)
-                .Take(context.Breakpoint == 0 ? 1 : context.Breakpoint - 1);
+                .Skip(currentLine)
+                .Take(breakpoint == 0 ? 1 : breakpoint - currentLine - 1);
         }
 
         private ScriptOptions CreateDefaultOptions() =>
