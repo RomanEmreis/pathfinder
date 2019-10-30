@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.Scripting;
+﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.CodeAnalysis.Text;
 using Pathfinder.Application.BuildingTools.Background;
 using System;
@@ -55,8 +56,8 @@ namespace Pathfinder.Application.BuildingTools {
             new CSharpDebuggingContext(
                 _sourceText, 
                 _nextBreakpoint, 
-                _currentLine, 
-                default);
+                _currentLine,
+                _debuggerState/*default*/);
 
         private int NextBreakpoint(BuildingTask buildingTask) {
             var currentLine = buildingTask.CurrentLine;

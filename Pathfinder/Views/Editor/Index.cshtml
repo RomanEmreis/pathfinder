@@ -1,6 +1,17 @@
 ﻿@model ProjectViewModel
 @{ ViewData["Title"] = "Editor"; }
 
+<div id="toolbar">
+    <button class="toolbar-btn-run" onclick="eventHandler.editor.buildProject();" title="Run code (F5)">
+        <img class="toolbar-btn-run-img">
+        <span style="margin: 2px 0px 0px 0px;">Run</span>
+    </button>
+    <button class="toolbar-btn-step-over" onclick="eventHandler.editor.stepOver();" title="Step over (F10)">
+        <img class="toolbar-btn-step-over-img">
+        <span style="margin: 2px 2px 0px 0px;">Step over</span>
+    </button>
+</div>
+
 <div id="editor"></div>
 <div id="output"></div>
 

@@ -7,6 +7,8 @@ using System;
 
 namespace Pathfinder.Application.BuildingTools {
     internal sealed class CSharpDebugger : IDebugger {
+        private const string _systemImport = "System";
+
         public async Task DebugAsync(CSharpDebuggingContext context) {
             if (context is null)                throw new ArgumentNullException(nameof(context));
             if (context.SourceText.Length == 0) return;
@@ -15,23 +17,25 @@ namespace Pathfinder.Application.BuildingTools {
             var debuggingBlock = FetchDebuggingBlocks(context);
 
             foreach (TextLineDebugger line in debuggingBlock) {
-                context.DebuggingState = await line.DebugAsync(/*context.DebuggingState*/default, options);
+                context.DebuggingState = await line.DebugAsync(context.DebuggingState, options);
                 context.CurrentLine++;
             }
         }
 
         private IEnumerable<TextLine> FetchDebuggingBlocks(CSharpDebuggingContext context) {
-            var breakpoint  = context.Breakpoint;
-            var currentLine = context.CurrentLine;
+            var breakpoint     = context.Breakpoint;
+            var currentLine    = context.CurrentLine;
+
+            var codeLinesRange = breakpoint == 0 ? 1 : breakpoint - currentLine - 1;
 
             return context.SourceText.Lines
                 .Skip(currentLine)
-                .Take(breakpoint == 0 ? 1 : breakpoint - currentLine - 1);
+                .Take(codeLinesRange);
         }
 
         private ScriptOptions CreateDefaultOptions() =>
             ScriptOptions.Default
-                .WithImports("System")
+                .WithImports(_systemImport)
                 .WithEmitDebugInformation(true);
     }
 }

@@ -14,13 +14,16 @@ namespace Pathfinder.Application.BuildingTools {
             CSharpScript.Create(_textLine.ToString(), options);
 
         internal async Task<ScriptState<object>?> DebugAsync(ScriptState<object>? lastState, ScriptOptions options) {
-            var script = CSharpScript.Create(_textLine.ToString(), options);
+            var scriptString = _textLine.ToString();
+            if (string.IsNullOrWhiteSpace(scriptString)) return lastState;
+            
             try {
-                lastState = lastState is null 
-                    ? await script.RunAsync()
-                    : await script.RunFromAsync(lastState);
+                lastState = lastState is null
+                    ? await CSharpScript.Create(scriptString, options).RunAsync()
+                    : await lastState.ContinueWithAsync(scriptString, options);
             } catch (CompilationErrorException) {
             } catch (ArgumentException) {
+                lastState = null;
             } catch (Exception ex) {
                 Console.Error.WriteLine(ex.InnerException ?? ex);
             }

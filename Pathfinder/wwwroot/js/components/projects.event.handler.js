@@ -12,7 +12,7 @@ class ProjectsEventHandler {
     connect = () => {
         this.connection
             .start()
-            .catch(err => onError(err));
+            .catch(err => this.onError(err));
     }
 
     subscripe = () => {
