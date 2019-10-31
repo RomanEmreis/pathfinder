@@ -5,6 +5,9 @@ using System;
 using System.Threading.Tasks;
 
 namespace Pathfinder.Application.BuildingTools {
+    /// <summary>
+    ///     Represents the single line debugger
+    /// </summary>
     internal sealed class TextLineDebugger {
         private readonly TextLine _textLine;
 

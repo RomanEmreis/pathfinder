@@ -12,7 +12,7 @@ namespace Pathfinder.Application.Extensions {
             var conectionString = configuration.GetConnectionString(SqlConnection);
             return services
                 .AddDbContext<ApplicationDbContext>(options => 
-                    options.UseSqlServer(conectionString));
+                    options.UseInMemoryDatabase("PathfinderDb")/*.UseSqlServer(conectionString)*/);
         }
 
         internal static IServiceCollection ConfigureIdentity(this IServiceCollection services) {
@@ -30,16 +30,11 @@ namespace Pathfinder.Application.Extensions {
 
             services
                 .AddAuthentication()
-                .AddGoogle(options           => SetupOAuthSecrets(options, googleAuthSection))
-                .AddMicrosoftAccount(options => SetupOAuthSecrets(options, microsoftAuthSection))
-                .AddGitHub(options           => SetupOAuthSecrets(options, gitHubAuthSection));
+                .AddGoogle(options           => options.SetupSecrets(googleAuthSection))
+                .AddMicrosoftAccount(options => options.SetupSecrets(microsoftAuthSection))
+                .AddGitHub(options           => options.SetupSecrets(gitHubAuthSection));
 
             return services;
-        }
-
-        private static void SetupOAuthSecrets(OAuthOptions options, IConfigurationSection authConfigurationSection) {
-            options.ClientId     = authConfigurationSection[ClientId];
-            options.ClientSecret = authConfigurationSection[ClientSecret];
         }
     }
 }

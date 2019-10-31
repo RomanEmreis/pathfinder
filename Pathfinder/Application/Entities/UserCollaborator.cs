@@ -4,6 +4,9 @@ using System;
 using System.Collections.Generic;
 
 namespace Pathfinder.Application.Entities {
+    /// <summary>
+    ///     Default <see cref="IProjectCollaborator"/> implementation that uses the <seealso cref="IdentityUser"/> as user contract
+    /// </summary>
     public sealed class UserCollaborator : IProjectCollaborator {
         private UserCollaborator() => CollaboratedProjects = new HashSet<ProjectViewModel>();
 

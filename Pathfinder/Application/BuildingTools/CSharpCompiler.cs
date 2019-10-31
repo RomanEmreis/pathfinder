@@ -8,6 +8,9 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace Pathfinder.Application.BuildingTools {
+    /// <summary>
+    ///     Implementation of <see cref="ICompiler"/> for C# language
+    /// </summary>
     internal class CSharpCompiler : ICompiler {
         public Task<byte[]> CompileAsync(BuildingTask buildingTask) {
             if (buildingTask is null) throw new ArgumentNullException(nameof(buildingTask));

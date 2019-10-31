@@ -1,9 +1,11 @@
 ﻿using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.CodeAnalysis.Text;
-using System.Collections.Generic;
 
 namespace Pathfinder.Application.BuildingTools {
-    public sealed class CSharpDebuggingContext {
+    /// <summary>
+    ///     Implementation of <see cref="IDebuggingContext"/> for C# language
+    /// </summary>
+    public sealed class CSharpDebuggingContext : IDebuggingContext {
         public CSharpDebuggingContext(SourceText sourceText, int breakpoint, int currentLine, ScriptState<object>? debuggingState) {
             SourceText  = sourceText;
             Breakpoint  = breakpoint;

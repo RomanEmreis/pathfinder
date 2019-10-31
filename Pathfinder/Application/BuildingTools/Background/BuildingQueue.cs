@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Pathfinder.Application.BuildingTools.Background {
+    /// <summary>
+    ///     Default implementation of <see cref="IBuildingQueue"/>
+    /// </summary>
     internal sealed class BuildingQueue : IBuildingQueue, IDisposable {
         private ConcurrentQueue<BuildingTask> _buildingTasks = new ConcurrentQueue<BuildingTask>();
         private SemaphoreSlim                 _signal        = new SemaphoreSlim(0,10);
@@ -26,8 +30,8 @@ namespace Pathfinder.Application.BuildingTools.Background {
             throw new InvalidOperationException();
         }
 
-        public ValueTask<BuildingTask[]> GetQueuedTasksAsync() =>
-            new ValueTask<BuildingTask[]>(_buildingTasks.ToArray());
+        public ValueTask<IReadOnlyCollection<BuildingTask>> GetQueuedTasksAsync() =>
+            new ValueTask<IReadOnlyCollection<BuildingTask>>(_buildingTasks.ToArray());
 
         public void Dispose() => _signal.Dispose();
     }

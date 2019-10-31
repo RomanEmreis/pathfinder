@@ -4,6 +4,9 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace Pathfinder.Application.BuildingTools {
+    /// <summary>
+    ///     Implementation of <see cref="IRunner"/> for C# language
+    /// </summary>
     internal class CSharpRunner : IRunner {
         public Task<BuildingResult> ExecuteAsync(byte[] compiledAssembly, string[] arguments) {
             if (compiledAssembly.Length == 0) return Task.FromResult(new BuildingResult());

@@ -5,6 +5,9 @@ using System.Collections.Concurrent;
 using System.Threading.Tasks;
 
 namespace Pathfinder.Application.BuildingTools {
+    /// <summary>
+    ///     Implementation of <see cref="IDebuggingSessions"/> for C# language
+    /// </summary>
     public sealed class CSharpDebuggingSessions : IDebuggingSessions {
         private readonly ConcurrentDictionary<string, IDebuggingSession> _sessions = new ConcurrentDictionary<string, IDebuggingSession>();
         private readonly IServiceScopeFactory _serviceScopeFactory;

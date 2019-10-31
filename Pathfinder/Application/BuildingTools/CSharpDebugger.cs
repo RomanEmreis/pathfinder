@@ -9,7 +9,7 @@ namespace Pathfinder.Application.BuildingTools {
     internal sealed class CSharpDebugger : IDebugger {
         private const string _systemImport = "System";
 
-        public async Task DebugAsync(CSharpDebuggingContext context) {
+        public async Task DebugAsync(IDebuggingContext context) {
             if (context is null)                throw new ArgumentNullException(nameof(context));
             if (context.SourceText.Length == 0) return;
 
@@ -22,7 +22,7 @@ namespace Pathfinder.Application.BuildingTools {
             }
         }
 
-        private IEnumerable<TextLine> FetchDebuggingBlocks(CSharpDebuggingContext context) {
+        private IEnumerable<TextLine> FetchDebuggingBlocks(IDebuggingContext context) {
             var breakpoint     = context.Breakpoint;
             var currentLine    = context.CurrentLine;
 

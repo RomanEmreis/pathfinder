@@ -1,4 +1,7 @@
 ﻿namespace Pathfinder.Application.BuildingTools {
+    /// <summary>
+    ///     Represents the result of building operation
+    /// </summary>
     public sealed class BuildingResult {
         public bool Success { get; set; }
 

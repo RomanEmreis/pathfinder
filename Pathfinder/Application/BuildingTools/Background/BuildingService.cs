@@ -8,6 +8,9 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Pathfinder.Application.BuildingTools.Background {
+    /// <summary>
+    ///     Service that launches tasks coming from the queue
+    /// </summary>
     internal sealed class BuildingService : BackgroundService {
         private readonly IBuildingQueue       _buildingQueue;
         private readonly IServiceScopeFactory _serviceScopeFactory;
@@ -19,6 +22,9 @@ namespace Pathfinder.Application.BuildingTools.Background {
             _debuggingSessions   = debuggingSessions;
         }
 
+        /// <summary>
+        ///     Launches tasks from the queue
+        /// </summary>
         protected async override Task ExecuteAsync(CancellationToken cancellationToken) {
             using var scope = _serviceScopeFactory.CreateScope();
 
@@ -32,6 +38,10 @@ namespace Pathfinder.Application.BuildingTools.Background {
             }
         }
 
+        /// <summary>
+        ///     Compile and run <paramref name="buildingTask"/> to completion
+        /// </summary>
+        /// <param name="buildingTask">description of building operation</param>
         private async Task RunToCompletion(IServiceScope scope, BuildingTask buildingTask) {
             var compiler         = scope.ServiceProvider.GetRequiredService<ICompiler>();
             var runner           = scope.ServiceProvider.GetRequiredService<IRunner>();
@@ -61,6 +71,10 @@ namespace Pathfinder.Application.BuildingTools.Background {
             }
         }
 
+        /// <summary>
+        ///     Debug the <paramref name="buildingTask"/> to first/next breakpoint
+        /// </summary>
+        /// <param name="buildingTask">description of building operation</param>
         private async Task RunDebug(IServiceScope scope, BuildingTask buildingTask) {
             var debuggingSession = await _debuggingSessions.GetOrAddSession(buildingTask);
             var editorHubContext = scope.ServiceProvider.GetRequiredService<IHubContext<LiveEditorHub>>();

@@ -9,8 +9,8 @@ namespace Pathfinder.Application.Services {
         private ConcurrentDictionary<string, ProjectViewModel> _existedProjects = new ConcurrentDictionary<string, ProjectViewModel>();
 
         public ValueTask<ProjectsViewModel> GetProjects() {
-            var roomsViewModel = new ProjectsViewModel { Projects = _existedProjects.Values };
-            return new ValueTask<ProjectsViewModel>(roomsViewModel);
+            var projectsViewModel = new ProjectsViewModel { Projects = _existedProjects.Values };
+            return new ValueTask<ProjectsViewModel>(projectsViewModel);
         }
 
         public ValueTask<bool> Add(ProjectViewModel project) {

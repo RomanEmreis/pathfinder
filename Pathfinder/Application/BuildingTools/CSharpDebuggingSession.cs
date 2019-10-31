@@ -8,6 +8,9 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace Pathfinder.Application.BuildingTools {
+    /// <summary>
+    ///     Implementation of <see cref="IDebuggingSession"/> for C# language
+    /// </summary>
     public class CSharpDebuggingSession : IDebuggingSession {
         private          bool                 _isDisposed    = false;
 
